@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lh.springboot03.mapper.GoodsMapper">
+    <resultMap id="CategoryList" type="com.lh.springboot03.bean.GoodsCategoryList">
+        <id column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="category_create" property="categoryCreate"/>
+        <result column="category_update" property="categoryUpdate"/>
+        <collection property="types"
+                    ofType="com.lh.springboot03.bean.GoodsType">
+            <id property="typeId" column="type_id"/>
+            <id property="categoryId" column="category_id"/>
+            <id property="typeName" column="type_name"/>
+            <id property="typeCreate" column="type_create"/>
+            <id property="typeUpdate" column="type_update"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectGoodsCategoryList" resultMap="CategoryList">
+        SELECT
+        c.*,t.*
+        FROM
+        goods_category AS c,goods_type AS t
+        WHERE c.category_id = t.category_id
+    </select>
+
+
+    <resultMap id="GoodsCategoryTree" type="com.lh.springboot03.bean_admin.GoodsCategoryTree">
+        <id column="category_id" property="id"/>
+        <result column="category_name" property="name"/>
+        <result column="category_create" property="createTime"/>
+        <result column="category_update" property="updateTime"/>
+        <collection property="children" ofType="com.lh.springboot03.bean_admin.GoodsCategoryTree">
+            <id property="id" column="type_id"/>
+            <result property="name" column="type_name"/>
+            <result property="createTime" column="type_create"/>
+            <result property="updateTime" column="type_update"/>
+            <result column="fatherId" property="fatherId"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectGoodsCategoryTree" resultMap="GoodsCategoryTree">
+        SELECT
+        c.*,t.*,c.category_id as fatherId
+        FROM
+        goods_category AS c,goods_type AS t
+        WHERE c.category_id = t.category_id
+    </select>
+
+
+    <select id="getGoodsDetailById" resultType="com.lh.springboot03.bean.GoodsDetail">
+        SELECT
+        g.*, category_name, type_name, username AS owner_name
+        FROM
+        goods AS g, goods_category AS c, goods_type AS t, t_user AS u
+        WHERE
+        g.id = #{id} AND
+        g.category_id = c.category_id AND
+        g.type_id = t.type_id AND
+        g.owner_id = u.uid
+    </select>
+
+
+    <select id="getGoodsDetailByWaitCheck" resultType="com.lh.springboot03.bean.GoodsDetail">
+        SELECT
+        g.*, category_name, type_name
+        FROM
+        goods AS g, goods_category AS c, goods_type AS t
+        WHERE
+        g.status = -4 AND
+        g.category_id = c.category_id AND
+        g.type_id = t.type_id
+    </select>
+
+
+    <select id="getCollectedList" resultType="com.lh.springboot03.bean.Goods">
+        SELECT
+        g.*
+        FROM
+        collect AS c, goods AS g
+        WHERE
+        c.user_id = #{uid} AND c.goods_id = g.id
+    </select>
+
+</mapper>
